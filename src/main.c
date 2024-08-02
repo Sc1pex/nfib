@@ -26,12 +26,14 @@ int main(int argc, char** argv) {
     // test_random_bignum(1000000);
     const int runs = 10;
 
-    for (int i = 0; i <= 5000; i++) {
+    for (int i = 0; i <= 20; i++) {
         RunStats stats = run(naive, i, runs);
+        char* num = bignum_string(stats.num);
         printf(
-            "Generated %d'th fibbn number in %fms avg (%f min, %f max)\n across %d runs",
-            i, stats.avg, stats.min, stats.max, 10);
+            "Generated %d'th fibbn number in %fms avg (%fms min, %fms max) across %d runs:\n%s\n",
+            i, stats.avg, stats.min, stats.max, runs, num);
         bignum_free(&stats.num);
+        free(num);
     }
     return 0;
 }

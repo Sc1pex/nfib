@@ -25,6 +25,14 @@ BigNum bignum_fromu64(uint64_t num) {
     return b;
 }
 
+void bignum_free(BigNum* n) {
+    if (n->digits) {
+        free(n->digits);
+        n->digits = NULL;
+    }
+    n->size = 0;
+}
+
 BigNum bignum_add(BigNum n1, BigNum n2) {
     BigNum s;
     s.size = 0;
@@ -56,12 +64,18 @@ BigNum bignum_add(BigNum n1, BigNum n2) {
     return s;
 }
 
-void bignum_free(BigNum* n) {
-    if (n->digits) {
-        free(n->digits);
-        n->digits = NULL;
+bool bignum_eq(BigNum n1, BigNum n2) {
+    if (n1.size != n2.size) {
+        return false;
     }
-    n->size = 0;
+
+    for (size_t i = 0; i < n1.size; i++) {
+        if (n1.digits[i] != n2.digits[i]) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void bignum_print(BigNum n) {
@@ -69,4 +83,14 @@ void bignum_print(BigNum n) {
         size_t idx = n.size - i - 1;
         printf("%d", n.digits[idx]);
     }
+}
+
+char* bignum_string(BigNum n) {
+    char* out = malloc(n.size + 1);
+    for (size_t i = 0; i < n.size; i++) {
+        out[n.size - i - 1] = n.digits[i] + '0';
+    }
+    out[n.size] = 0;
+
+    return out;
 }

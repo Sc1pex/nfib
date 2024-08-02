@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -9,6 +10,10 @@ typedef struct {
 } BigNum;
 
 BigNum bignum_fromu64(uint64_t num);
-BigNum bignum_add(BigNum n1, BigNum n2);
 void bignum_free(BigNum* n);
+
+BigNum bignum_add(BigNum n1, BigNum n2);
+bool bignum_eq(BigNum n1, BigNum n2);
+
 void bignum_print(BigNum n);
+char* bignum_string(BigNum n);

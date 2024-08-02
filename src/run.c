@@ -21,15 +21,8 @@ RunStats run(FibImpl impl, int n, int runs) {
         if (i == 0) {
             stats.num = res;
         } else {
-            assertf(
-                stats.num.size == res.size,
-                "runs gave different results. expected size of %zu, got %zu",
-                stats.num.size, res.size);
-            for (size_t i = 0; i < stats.num.size; i++) {
-                assertf(stats.num.digits[i] == res.digits[i],
-                        "digit %zu is different. expected %d, got %d", i,
-                        stats.num.digits[i], res.digits[i])
-            }
+            assertf(bignum_eq(stats.num, res), "%s != %s",
+                    bignum_string(stats.num), bignum_string(res));
             bignum_free(&res);
         }
 

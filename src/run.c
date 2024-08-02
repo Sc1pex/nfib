@@ -8,6 +8,7 @@ RunStats run(FibImpl impl, int n, int runs) {
     assertf(runs > 0, "runs should be > 1, but is %d", runs);
 
     RunStats stats;
+    stats.n = n;
     stats.avg = 0;
     stats.min = DBL_MAX;
     stats.max = DBL_MIN;

@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "fibb_impl.h"
-#include "num.h"
 #include "run.h"
 
 void test_random_bignum(int count) {
@@ -32,6 +31,7 @@ int main(int argc, char** argv) {
         printf(
             "Generated %d'th fibbn number in %fms avg (%f min, %f max)\n across %d runs",
             i, stats.avg, stats.min, stats.max, 10);
+        bignum_free(&stats.num);
     }
     return 0;
 }

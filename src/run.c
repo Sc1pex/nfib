@@ -12,8 +12,6 @@ RunStats run(FibImpl impl, int n, int runs) {
     stats.min = DBL_MAX;
     stats.max = DBL_MIN;
 
-    BigNum first;
-
     for (int i = 0; i < runs; i++) {
         clock_t start = clock();
         BigNum res = impl(n);
@@ -21,16 +19,16 @@ RunStats run(FibImpl impl, int n, int runs) {
 
         // Make sure all results are the same
         if (i == 0) {
-            first = res;
+            stats.num = res;
         } else {
             assertf(
-                first.size == res.size,
+                stats.num.size == res.size,
                 "runs gave different results. expected size of %zu, got %zu",
-                first.size, res.size);
-            for (size_t i = 0; i < first.size; i++) {
-                assertf(first.digits[i] == res.digits[i],
+                stats.num.size, res.size);
+            for (size_t i = 0; i < stats.num.size; i++) {
+                assertf(stats.num.digits[i] == res.digits[i],
                         "digit %zu is different. expected %d, got %d", i,
-                        first.digits[i], res.digits[i])
+                        stats.num.digits[i], res.digits[i])
             }
             bignum_free(&res);
         }
@@ -40,8 +38,6 @@ RunStats run(FibImpl impl, int n, int runs) {
         stats.min = MIN(stats.min, time);
         stats.max = MAX(stats.max, time);
     }
-
-    bignum_free(&first);
 
     stats.avg /= runs;
     return stats;

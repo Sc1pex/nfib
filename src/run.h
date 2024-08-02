@@ -7,6 +7,7 @@ typedef struct {
     double min;
     double max;
     double avg;
+    BigNum num;
 } RunStats;
 
 RunStats run(FibImpl impl, int n, int runs);

@@ -7,9 +7,12 @@ BigNum naive(int num) {
 
     while (num) {
         f3 = bignum_add(f1, f2);
+        bignum_free(&f2);
         f2 = f1;
         f1 = f3;
+
         num -= 1;
     }
+    bignum_free(&f2);
     return f1;
 }

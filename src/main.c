@@ -25,10 +25,11 @@ void test_random_bignum(int count) {
 int main(int argc, char** argv) {
     // test_random_bignum(1000000);
 
-    for (int i = 0; i < 4000; i++) {
+    for (int i = 0; i <= 10000; i++) {
         // printf("%d fibb is ", i);
         BigNum f = naive(i);
         bignum_print(f);
+        bignum_free(&f);
         printf("\n");
     }
     return 0;

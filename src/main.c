@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "fibb_impl.h"
 #include "num.h"
+#include "run.h"
 
 void test_random_bignum(int count) {
     for (int i = 0; i < count; i++) {
@@ -24,13 +25,13 @@ void test_random_bignum(int count) {
 
 int main(int argc, char** argv) {
     // test_random_bignum(1000000);
+    const int runs = 10;
 
-    for (int i = 0; i <= 10000; i++) {
-        // printf("%d fibb is ", i);
-        BigNum f = naive(i);
-        bignum_print(f);
-        bignum_free(&f);
-        printf("\n");
+    for (int i = 0; i <= 5000; i++) {
+        RunStats stats = run(naive, i, runs);
+        printf(
+            "Generated %d'th fibbn number in %fms avg (%f min, %f max)\n across %d runs",
+            i, stats.avg, stats.min, stats.max, 10);
     }
     return 0;
 }

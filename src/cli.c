@@ -10,6 +10,7 @@ typedef void (*set_default_values)(Cli*);
 // Struct representing an option that can be configured from cli args
 typedef struct {
     const char* flags[2];
+    const int flag_count;
 
     parse parse_fn;
     // If this is NULL it is implied that this option is required
@@ -65,17 +66,19 @@ void default_val_range(Cli* cli) {
 static const CliOption commands[] = {
     {
         { "--output", "-o" },
+        2,
 
         parse_output_filename,
         NULL,
         "    -o|--output <output_filename.csv>    Name of file to write timings to\n",
     },
     {
-        { "--range" },
+        { "--range", "-R" },
+        2,
 
         parse_range,
         default_val_range,
-        "    --range <from>..<to>    Range of fibonacci numbers to calculate\n"
+        "    -R|--range <from>..<to>    Range of fibonacci numbers to calculate\n"
         "                            (from must be <= to to)\n",
     },
 };
@@ -103,8 +106,8 @@ bool cli_parse(Cli* cli, int argc, char** argv) {
 
         for (int i = 0; i < num_commands && !handled; i++) {
             const CliOption* c = &commands[i];
-            for (const char* const* flag = c->flags; *flag; flag++) {
-                if (strcmp(*flag, argv[current_arg]) == 0) {
+            for (int f = 0; f < c->flag_count; f++) {
+                if (strcmp(c->flags[f], argv[current_arg]) == 0) {
                     current_arg++;
 
                     if (!c->parse_fn(cli, &current_arg, argv)) {

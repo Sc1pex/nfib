@@ -1,6 +1,6 @@
 #pragma once
 
-#include "fibb_impl.h"
+#include "fib_impl.h"
 
 // Stats about runs in ms
 typedef struct {

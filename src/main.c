@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "common.h"
 #include "csv.h"
-#include "fibb_impl.h"
+#include "fib_impl.h"
 #include "run.h"
 
 void test_random_bignum(int count) {
@@ -40,8 +40,9 @@ int main(int argc, char** argv) {
         char* num = bignum_string(stats.num);
 
         printf(
-            "Generated %d'th fibbn number in %fms avg (%fms min, %fms max) across %d runs:\n%s\n",
-            i, stats.avg, stats.min, stats.max, runs, num);
+            "Generated %d'th fib number in %fms avg (%fms min, %fms max) across %d runs:\n%s\n",
+            i, stats.avg, stats.min, stats.max, runs, num
+        );
         csv_write(&csv, &stats);
 
         bignum_free(&stats.num);

@@ -3,4 +3,4 @@
 cd build
 meson compile
 cd ..
-./build/nfibb $@
+./build/nfib $@

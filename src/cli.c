@@ -58,9 +58,28 @@ bool parse_range(Cli* cli, int* current_arg, char** argv) {
     return true;
 }
 
+bool parse_runs(Cli* cli, int* current_arg, char** argv) {
+    char* runs = argv[*current_arg];
+    (*current_arg)++;
+
+    int len = strlen(runs);
+    for (int i = 0; i < len; i++) {
+        if (runs[i] < '0' || runs[i] > '9') {
+            return false;
+        }
+    }
+    cli->runs = atoi(runs);
+
+    return true;
+}
+
 void default_val_range(Cli* cli) {
     cli->min_num = 1;
     cli->max_num = 1000;
+}
+
+void default_runs(Cli* cli) {
+    cli->runs = 5;
 }
 
 static const CliOption commands[] = {
@@ -81,6 +100,14 @@ static const CliOption commands[] = {
         "    -R|--range <from>..<to>    Range of fibonacci numbers to calculate\n"
         "                            (from must be <= to to)\n",
     },
+    {
+        { "--runs", "-r" },
+        2,
+
+        parse_runs,
+        default_runs,
+        "    -r|--runs <runs>    Number of runs to do for each number",
+    }
 };
 static const int num_commands = sizeof(commands) / sizeof(CliOption);
 

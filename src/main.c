@@ -33,16 +33,13 @@ int main(int argc, char** argv) {
     CSVOutput csv;
     assertf(csv_init(&csv, cli.output_filename), "failed to init csv file");
 
-    // test_random_bignum(1000000);
-    const int runs = 10;
-
     for (int i = cli.min_num; i <= cli.max_num; i++) {
-        RunStats stats = run(naive, i, runs);
+        RunStats stats = run(naive, i, cli.runs);
         char* num = bignum_string(stats.num);
 
         printf(
             "Generated %d'th fib number in %fms avg (%fms min, %fms max) across %d runs:\n%s\n",
-            i, stats.avg, stats.min, stats.max, runs, num
+            i, stats.avg, stats.min, stats.max, cli.runs, num
         );
         csv_write(&csv, &stats);
 

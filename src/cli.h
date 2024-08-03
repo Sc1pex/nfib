@@ -6,6 +6,7 @@ typedef struct {
     char* output_filename;
     int min_num;
     int max_num;
+    int runs;
 } Cli;
 
 bool cli_parse(Cli* cli, int argc, char** argv);

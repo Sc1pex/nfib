@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "cli.h"
 #include "common.h"
 #include "csv.h"
 #include "fib_impl.h"
@@ -24,18 +25,18 @@ void test_random_bignum(int count) {
 }
 
 int main(int argc, char** argv) {
-    if (argc != 2) {
-        printf("Usage: nfibb <output_file.csv>\n");
+    Cli cli;
+    if (!cli_parse(&cli, argc, argv)) {
         exit(1);
     }
 
     CSVOutput csv;
-    assertf(csv_init(&csv, argv[1]), "failed to init csv file");
+    assertf(csv_init(&csv, cli.output_filename), "failed to init csv file");
 
     // test_random_bignum(1000000);
     const int runs = 10;
 
-    for (int i = 0; i <= 300000; i++) {
+    for (int i = cli.min_num; i <= cli.max_num; i++) {
         RunStats stats = run(naive, i, runs);
         char* num = bignum_string(stats.num);
 
@@ -50,5 +51,6 @@ int main(int argc, char** argv) {
     }
 
     assertf(csv_close(&csv), "failed to clsoe csv file");
+    cli_free(&cli);
     return 0;
 }

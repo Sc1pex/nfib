@@ -1,4 +1,3 @@
 project('nfib', 'c')
 sources = ['src/main.c', 'src/fib_impl.c', 'src/num.c', 'src/run.c', 'src/csv.c', 'src/cli.c']
-deps = [dependency('sqlite3')]
-executable('nfib', sources, dependencies: deps)
+executable('nfib', sources)

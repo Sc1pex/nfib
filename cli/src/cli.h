@@ -7,6 +7,7 @@ typedef struct {
     int min_num;
     int max_num;
     int runs;
+    int threads;
 } Cli;
 
 bool cli_parse(Cli* cli, int argc, char** argv);

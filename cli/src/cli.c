@@ -73,6 +73,21 @@ bool parse_runs(Cli* cli, int* current_arg, char** argv) {
     return true;
 }
 
+bool parse_threads(Cli* cli, int* current_arg, char** argv) {
+    char* threads = argv[*current_arg];
+    (*current_arg)++;
+
+    int len = strlen(threads);
+    for (int i = 0; i < len; i++) {
+        if (threads[i] < '0' || threads[i] > '9') {
+            return false;
+        }
+    }
+    cli->threads = atoi(threads);
+
+    return true;
+}
+
 void default_val_range(Cli* cli) {
     cli->min_num = 1;
     cli->max_num = 1000;
@@ -80,6 +95,11 @@ void default_val_range(Cli* cli) {
 
 void default_runs(Cli* cli) {
     cli->runs = 5;
+}
+
+void default_threads(Cli* cli) {
+    // My cpu has 6 p cores so run on 12 threads
+    cli->threads = 12;
 }
 
 static const CliOption commands[] = {
@@ -107,6 +127,14 @@ static const CliOption commands[] = {
         parse_runs,
         default_runs,
         "    -r|--runs <runs>    Number of runs to do for each number",
+    },
+    {
+        { "--threads", "-t" },
+        2,
+
+        parse_threads,
+        default_threads,
+        "    -t|--threads <threads>    Number of threads to use for measuring in parallel",
     }
 };
 static const int num_commands = sizeof(commands) / sizeof(CliOption);

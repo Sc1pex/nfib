@@ -14,8 +14,6 @@ executable(
   sources: sources + test_sources,
   include_directories: lib_inc, 
   dependencies: gtest_dep,
-  cpp_args: '-DTESTING',
-  c_args: '-DTESTING'
 )
 
 lib = static_library('fiblib', sources, include_directories: lib_inc)

@@ -33,7 +33,7 @@ TEST(Channel, send_recv_few) {
     EXPECT_EQ(*read, 10);
 
     for (int i = 0; i < 10; i++) {
-        double* x = (double*) malloc(sizeof(int));
+        double* x = (double*) malloc(sizeof(double));
         *x = (i + 6.) / 7.;
         channel_send(tx, x);
     }

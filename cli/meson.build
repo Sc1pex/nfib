@@ -1,12 +1,16 @@
 sources = [
   'src/cli.c', 
   'src/csv.c',
-  'src/run.c'
+  'src/run.c',
+  'src/sync/arc.c',
+  'src/sync/channel.c',
+  'src/sync/ringbuf.c',
 ]
 sources_main = sources + ['src/main.c']
 
 test_sources = [
-  'test/test.cpp'
+  'test/channel.cpp',
+  'test/ringbuff.cpp',
 ]
 
 cli_inc = include_directories('src')

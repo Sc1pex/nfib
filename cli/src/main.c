@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "assertf.h"
 #include "cli.h"
-#include "common.h"
 #include "csv.h"
 #include "fib_impl.h"
 #include "run.h"
@@ -17,10 +17,7 @@ void test_random_bignum(int count) {
         BigNum bsum = bignum_add(b1, b2);
         BigNum bsum1 = bignum_fromu64(nsum);
 
-        assert(bsum.size == bsum1.size);
-        for (int j = 0; j < bsum.size; j++) {
-            assert(bsum.digits[j] == bsum1.digits[j]);
-        }
+        assertf(bignum_eq(bsum, bsum1), "");
     }
 }
 

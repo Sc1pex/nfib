@@ -1,7 +1,7 @@
 #include "run.h"
 #include <float.h>
 #include <time.h>
-#include "common.h"
+#include "assertf.h"
 
 RunStats run(FibImpl impl, int n, int runs) {
     assertf(n >= 0, "n should be > 0, but is %d", n);
@@ -22,8 +22,10 @@ RunStats run(FibImpl impl, int n, int runs) {
         if (i == 0) {
             stats.num = res;
         } else {
-            assertf(bignum_eq(stats.num, res), "%s != %s",
-                    bignum_string(stats.num), bignum_string(res));
+            assertf(
+                bignum_eq(stats.num, res), "%s != %s", bignum_string(stats.num),
+                bignum_string(res)
+            );
             bignum_free(&res);
         }
 

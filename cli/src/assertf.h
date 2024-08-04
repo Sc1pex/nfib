@@ -4,8 +4,10 @@
 #include <stdio.h>
 
 #define assert_error(M, ...) \
-    fprintf(stderr, "Assert at %s:%d failed: " M "\n", __FILE__, __LINE__, \
-            ##__VA_ARGS__)
+    fprintf( \
+        stderr, "Assert at %s:%d failed: " M "\n", __FILE__, __LINE__, \
+        ##__VA_ARGS__ \
+    )
 
 #define assertf(A, M, ...) \
     if (!(A)) { \

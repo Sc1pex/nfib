@@ -1,7 +1,6 @@
 #include "num.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "common.h"
 
 size_t digits(uint64_t x) {
     size_t d = 0;

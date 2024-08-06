@@ -7,8 +7,11 @@ typedef struct {
     double min;
     double max;
     double avg;
-    BigNum num;
+
     int n;
+    int runs;
+
+    BigNum num;
 } RunStats;
 
-RunStats run(FibImpl impl, int n, int runs);
+void run(FibImpl impl, int n, int runs, RunStats* stats);

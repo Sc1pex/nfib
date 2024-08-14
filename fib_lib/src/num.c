@@ -63,6 +63,47 @@ BigNum bignum_add(BigNum n1, BigNum n2) {
     return s;
 }
 
+BigNum bignum_mult(BigNum n1, BigNum n2) {
+    BigNum s;
+    s.size = 0;
+
+    if ((n1.size == 1 && n1.digits[0] == 0)
+        || (n2.size == 1 && n2.digits[0] == 0)) {
+        s.digits = malloc(1);
+        s.size = 1;
+        s.digits[0] = 0;
+        return s;
+    }
+
+    s.digits = malloc(n1.size + n2.size - 1);
+
+    int carry = 0;
+    for (; s.size < n1.size + n2.size - 1; s.size++) {
+        int res = carry % 10;
+        for (int i1 = 0; i1 <= s.size; i1++) {
+            int i2 = s.size - i1;
+            // TODO: Optimize starting and ending points and remove this
+            if (i1 >= n1.size || i2 >= n2.size) {
+                continue;
+            }
+
+            res += (int) n1.digits[i1] * n2.digits[i2];
+        }
+
+        carry /= 10;
+        carry += res / 10;
+        s.digits[s.size] = res % 10;
+    }
+
+    if (carry) {
+        s.digits = realloc(s.digits, s.size + 1);
+        s.digits[s.size] = carry;
+        s.size++;
+    }
+
+    return s;
+}
+
 bool bignum_eq(BigNum n1, BigNum n2) {
     if (n1.size != n2.size) {
         return false;

@@ -8,7 +8,7 @@
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 typedef struct {
-    char* digits;
+    uint8_t* digits;
     size_t size;
 } BigNum;
 
@@ -16,6 +16,7 @@ BigNum bignum_fromu64(uint64_t num);
 void bignum_free(BigNum* n);
 
 BigNum bignum_add(BigNum n1, BigNum n2);
+BigNum bignum_mult(BigNum n1, BigNum n2);
 bool bignum_eq(BigNum n1, BigNum n2);
 
 void bignum_print(BigNum n);

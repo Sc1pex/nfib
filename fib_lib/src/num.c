@@ -1,6 +1,7 @@
 #include "num.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 size_t digits(uint64_t x) {
     size_t d = 0;
@@ -24,6 +25,14 @@ BigNum bignum_fromu64(uint64_t num) {
     return b;
 }
 
+BigNum bignum_clone(const BigNum* b) {
+    BigNum c;
+    c.size = b->size;
+    c.digits = malloc(c.size);
+    memcpy(c.digits, b->digits, c.size);
+    return c;
+}
+
 void bignum_free(BigNum* n) {
     if (n->digits) {
         free(n->digits);
@@ -32,24 +41,24 @@ void bignum_free(BigNum* n) {
     n->size = 0;
 }
 
-BigNum bignum_add(BigNum n1, BigNum n2) {
+BigNum bignum_add(const BigNum* n1, const BigNum* n2) {
     BigNum s;
     s.size = 0;
-    s.digits = malloc(MAX(n1.size, n2.size));
+    s.digits = malloc(MAX(n1->size, n2->size));
 
     int carry = 0;
-    for (; s.size < MIN(n1.size, n2.size); s.size++) {
-        s.digits[s.size] = n1.digits[s.size] + n2.digits[s.size] + carry;
+    for (; s.size < MIN(n1->size, n2->size); s.size++) {
+        s.digits[s.size] = n1->digits[s.size] + n2->digits[s.size] + carry;
         carry = s.digits[s.size] / 10;
         s.digits[s.size] = s.digits[s.size] % 10;
     }
-    for (; s.size < n1.size; s.size++) {
-        s.digits[s.size] = n1.digits[s.size] + carry;
+    for (; s.size < n1->size; s.size++) {
+        s.digits[s.size] = n1->digits[s.size] + carry;
         carry = s.digits[s.size] / 10;
         s.digits[s.size] = s.digits[s.size] % 10;
     }
-    for (; s.size < n2.size; s.size++) {
-        s.digits[s.size] = n2.digits[s.size] + carry;
+    for (; s.size < n2->size; s.size++) {
+        s.digits[s.size] = n2->digits[s.size] + carry;
         carry = s.digits[s.size] / 10;
         s.digits[s.size] = s.digits[s.size] % 10;
     }
@@ -63,31 +72,31 @@ BigNum bignum_add(BigNum n1, BigNum n2) {
     return s;
 }
 
-BigNum bignum_mult(BigNum n1, BigNum n2) {
+BigNum bignum_mult(const BigNum* n1, const BigNum* n2) {
     BigNum s;
     s.size = 0;
 
-    if ((n1.size == 1 && n1.digits[0] == 0)
-        || (n2.size == 1 && n2.digits[0] == 0)) {
+    if ((n1->size == 1 && n1->digits[0] == 0)
+        || (n2->size == 1 && n2->digits[0] == 0)) {
         s.digits = malloc(1);
         s.size = 1;
         s.digits[0] = 0;
         return s;
     }
 
-    s.digits = malloc(n1.size + n2.size - 1);
+    s.digits = malloc(n1->size + n2->size - 1);
 
     int carry = 0;
-    for (; s.size < n1.size + n2.size - 1; s.size++) {
+    for (; s.size < n1->size + n2->size - 1; s.size++) {
         int res = carry % 10;
         for (int i1 = 0; i1 <= s.size; i1++) {
             int i2 = s.size - i1;
             // TODO: Optimize starting and ending points and remove this
-            if (i1 >= n1.size || i2 >= n2.size) {
+            if (i1 >= n1->size || i2 >= n2->size) {
                 continue;
             }
 
-            res += (int) n1.digits[i1] * n2.digits[i2];
+            res += (int) n1->digits[i1] * n2->digits[i2];
         }
 
         carry /= 10;

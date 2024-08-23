@@ -1,6 +1,7 @@
 sources = [
   'src/fib_impl.c',
-  'src/num.c'
+  'src/num.c',
+  'src/math.c',
 ]
 
 test_sources = [

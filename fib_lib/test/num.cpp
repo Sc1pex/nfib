@@ -2,6 +2,7 @@
 #include <random>
 
 extern "C" {
+#include "math.h"
 #include "num.h"
 }
 
@@ -49,4 +50,21 @@ TEST(BigNum, random_mult) {
         bignum_free(&bprod);
         bignum_free(&bsum1);
     }
+}
+
+TEST(Mat2, mult) {
+    auto m1 = mat_fromu64(1, 3, 5, 2);
+    auto m2 = mat_fromu64(3, 0, 2, 1);
+
+    auto mp = mat_mat_mult(&m1, &m2);
+    auto mp1 = mat_fromu64(9, 3, 19, 2);
+
+    for (int i = 0; i < 4; i++) {
+        ASSERT_TRUE(bignum_eq(mp.el[i], mp1.el[i]));
+    }
+
+    mat_free(&m1);
+    mat_free(&m2);
+    mat_free(&mp);
+    mat_free(&mp1);
 }

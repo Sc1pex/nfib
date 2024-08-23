@@ -52,6 +52,11 @@ Vec2 mat_vec_mult(const Mat2* m, const Vec2* v) {
 }
 
 Mat2 mat_exp(const Mat2* m, uint64_t e) {
+    if (e == 0) {
+        Mat2 m = mat_fromu64(1, 0, 0, 1);
+        return m;
+    }
+
     if (e == 1) {
         Mat2 m1 = mat_clone(m);
         return m1;

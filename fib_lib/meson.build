@@ -5,7 +5,8 @@ sources = [
 ]
 
 test_sources = [
-  'test/num.cpp'
+  'test/num.cpp',
+  'test/math.cpp'
 ]
 
 lib_inc = include_directories('include')

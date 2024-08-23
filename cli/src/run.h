@@ -8,10 +8,10 @@ typedef struct {
     double max;
     double avg;
 
-    int n;
+    uint64_t n;
     int runs;
 
     BigNum num;
 } RunStats;
 
-void run(FibImpl impl, int n, int runs, RunStats* stats);
+void run(FibImpl impl, uint64_t n, int runs, RunStats* stats);

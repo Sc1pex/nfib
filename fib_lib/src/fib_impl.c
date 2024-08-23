@@ -1,6 +1,6 @@
 #include "fib_impl.h"
 
-BigNum naive(int num) {
+BigNum naive(uint64_t num) {
     BigNum f1 = bignum_fromu64(0);
     BigNum f2 = bignum_fromu64(1);
     BigNum f3;

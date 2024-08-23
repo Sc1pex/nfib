@@ -3,6 +3,6 @@
 #include <stdint.h>
 #include "num.h"
 
-typedef BigNum (*FibImpl)(int);
+typedef BigNum (*FibImpl)(uint64_t);
 
-BigNum naive(int num);
+BigNum naive(uint64_t num);

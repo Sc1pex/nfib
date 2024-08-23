@@ -15,8 +15,10 @@ bool csv_init(CSVOutput* out, const char* filename) {
 
 void csv_write(CSVOutput* csv, const RunStats* run) {
     char* num = bignum_string(run->num);
-    fprintf(csv->file, "%d,%f,%f,%f,%s\n", run->n, run->avg, run->min, run->max,
-            num);
+    fprintf(
+        csv->file, "%lu,%f,%f,%f,%s\n", run->n, run->avg, run->min, run->max,
+        num
+    );
     free(num);
 }
 

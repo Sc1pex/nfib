@@ -9,8 +9,8 @@ double timespec_diff_ms(struct timespec* start, struct timespec* end) {
            + (end->tv_nsec - start->tv_nsec) / 1000000.0;
 }
 
-void run(FibImpl impl, int n, int runs, RunStats* stats) {
-    assertf(n >= 0, "n should be > 0, but is %d", n);
+void run(FibImpl impl, uint64_t n, int runs, RunStats* stats) {
+    assertf(n >= 0, "n should be > 0, but is %lu", n);
     assertf(runs > 0, "runs should be > 1, but is %d", runs);
 
     stats->n = n;

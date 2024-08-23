@@ -1,11 +1,12 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdint.h>
 
 typedef struct {
     char* output_filename;
-    int min_num;
-    int max_num;
+    uint64_t min_num;
+    uint64_t max_num;
     int runs;
     int threads;
 } Cli;

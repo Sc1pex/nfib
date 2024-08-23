@@ -9,8 +9,8 @@
 #include "sync/channel.h"
 
 typedef struct {
-    int start_num;
-    int end_num;
+    uint64_t start_num;
+    uint64_t end_num;
     int increment_by;
     int runs;
 
@@ -20,7 +20,7 @@ typedef struct {
 int run_thread(void* arg) {
     ThreadArg* t_arg = (ThreadArg*) arg;
 
-    for (int i = t_arg->start_num; i <= t_arg->end_num;
+    for (uint64_t i = t_arg->start_num; i <= t_arg->end_num;
          i += t_arg->increment_by) {
         RunStats* stats = malloc(sizeof(RunStats));
         run(naive, i, t_arg->runs, stats);
@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
     RunStats* stats;
     while (channel_recv(rx, (void**) &stats)) {
         printf(
-            "Generated %d'th fib number in %fms avg (%fms min, %fms max) across %d runs:\n",
+            "Generated %lu'th fib number in %fms avg (%fms min, %fms max) across %d runs:\n",
             stats->n, stats->avg, stats->min, stats->max, stats->runs
         );
         csv_write(&csv, stats);

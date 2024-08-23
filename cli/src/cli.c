@@ -41,7 +41,7 @@ bool parse_range(Cli* cli, int* current_arg, char** argv) {
             return false;
         }
     }
-    cli->min_num = atoi(range);
+    cli->min_num = strtoull(range, NULL, 10);
     range = sep + 2;
     num_len = strlen(range);
     for (int i = 0; i < num_len; i++) {

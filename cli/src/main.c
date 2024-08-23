@@ -23,7 +23,7 @@ int run_thread(void* arg) {
     for (uint64_t i = t_arg->start_num; i <= t_arg->end_num;
          i += t_arg->increment_by) {
         RunStats* stats = malloc(sizeof(RunStats));
-        run(naive, i, t_arg->runs, stats);
+        run(fib_naive, i, t_arg->runs, stats);
 
         channel_send(t_arg->tx, stats);
     }

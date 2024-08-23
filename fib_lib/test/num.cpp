@@ -68,3 +68,18 @@ TEST(Mat2, mult) {
     mat_free(&mp);
     mat_free(&mp1);
 }
+
+TEST(Mat2, vec_mult) {
+    auto m = mat_fromu64(3, 0, 2, 1);
+    auto v = vec_fromu64(4, 8);
+
+    auto vp = mat_vec_mult(&m, &v);
+    auto vp1 = vec_fromu64(12, 16);
+
+    ASSERT_TRUE(bignum_eq(vp.x, vp1.x));
+
+    mat_free(&m);
+    vec_free(&v);
+    vec_free(&vp);
+    vec_free(&vp1);
+}

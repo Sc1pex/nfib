@@ -1,5 +1,17 @@
 #include "math.h"
 
+Vec2 vec_fromu64(uint64_t x, uint64_t y) {
+    Vec2 v;
+    v.x = bignum_fromu64(x);
+    v.y = bignum_fromu64(y);
+    return v;
+}
+
+void vec_free(Vec2* m) {
+    bignum_free(&m->x);
+    bignum_free(&m->y);
+}
+
 Mat2 mat_fromu64(uint64_t x1, uint64_t x2, uint64_t y1, uint64_t y2) {
     Mat2 m;
     m.x1 = bignum_fromu64(x1);
@@ -26,6 +38,15 @@ Mat2 mat_mat_mult(const Mat2* m1, const Mat2* m2) {
     res.x2 = mat_step(&m1->x1, &m1->x2, &m2->x2, &m2->y2);
     res.y1 = mat_step(&m1->y1, &m1->y2, &m2->x1, &m2->y1);
     res.y2 = mat_step(&m1->y1, &m1->y2, &m2->x2, &m2->y2);
+
+    return res;
+}
+
+Vec2 mat_vec_mult(const Mat2* m, const Vec2* v) {
+    Vec2 res;
+
+    res.x = mat_step(&m->x1, &m->x2, &v->x, &v->y);
+    res.y = mat_step(&m->y1, &m->y2, &v->x, &v->y);
 
     return res;
 }

@@ -1,55 +1,35 @@
 #include "cli.h"
+#include <ctype.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-typedef bool (*parse)(Cli*, int*, char**);
-typedef void (*set_default_values)(Cli*);
-
-// Struct representing an option that can be configured from cli args
-typedef struct {
-    const char* flags[2];
-    const int flag_count;
-
-    parse parse_fn;
-    // If this is NULL it is implied that this option is required
-    set_default_values default_val_fn;
-
-    const char* usage;
-} CliOption;
-
-bool parse_output_filename(Cli* cli, int* current_arg, char** argv) {
-    int len = strlen(argv[*current_arg]);
-    cli->output_filename = malloc(len);
-    strcpy(cli->output_filename, argv[*current_arg]);
-    (*current_arg)++;
-    return true;
-}
-
-bool parse_range(Cli* cli, int* current_arg, char** argv) {
-    const char* range = argv[*current_arg];
-    (*current_arg)++;
+bool parse_range(Cli* cli, int* argc, char*** argv) {
+    char* range = (*argv)[0];
+    (*argc)--;
+    (*argv)++;
 
     char* sep = strstr(range, "..");
-    if (!sep) {
+    if (sep == NULL) {
         return false;
     }
-    int num_len = sep - range;
-    for (int i = 0; i < num_len; i++) {
-        if (range[i] < '0' || range[i] > '9') {
+
+    size_t digits = sep - range;
+    for (size_t i = 0; i < digits; i++) {
+        if (!isdigit(range[i])) {
             return false;
         }
     }
-    cli->min_num = strtoull(range, NULL, 10);
+    cli->min_num = strtol(range, NULL, 10);
     range = sep + 2;
-    num_len = strlen(range);
-    for (int i = 0; i < num_len; i++) {
-        if (range[i] < '0' || range[i] > '9') {
+    digits = strlen(range);
+    for (size_t i = 0; i < digits; i++) {
+        if (!isdigit(range[i])) {
             return false;
         }
     }
-    cli->max_num = atoi(range);
+    cli->max_num = strtol(range, NULL, 10);
 
     if (cli->min_num > cli->max_num) {
         return false;
@@ -58,143 +38,162 @@ bool parse_range(Cli* cli, int* current_arg, char** argv) {
     return true;
 }
 
-bool parse_runs(Cli* cli, int* current_arg, char** argv) {
-    char* runs = argv[*current_arg];
-    (*current_arg)++;
+bool parse_impl(Cli* cli, int* argc, char*** argv) {
+    (*argc)--;
+    char* range = (*argv)[0];
 
-    int len = strlen(runs);
-    for (int i = 0; i < len; i++) {
-        if (runs[i] < '0' || runs[i] > '9') {
+    char* p = strtok(range, ",");
+    while (p != NULL) {
+        bool ok = false;
+        for (size_t i = 0; i < num_cli_impls; i++) {
+            if (strcmp(p, cli_impls[i]) == 0) {
+                ok = true;
+                cli->impl |= (1 << i);
+                break;
+            }
+        }
+        if (!ok) {
+            printf("Unknown implementation: %s\n", p);
             return false;
         }
+
+        p = strtok(NULL, ",");
     }
-    cli->runs = atoi(runs);
 
     return true;
 }
 
-bool parse_threads(Cli* cli, int* current_arg, char** argv) {
-    char* threads = argv[*current_arg];
-    (*current_arg)++;
+typedef bool (*ParseFn)(Cli* cli, int* argc, char*** argv);
+typedef bool (*SetDefaultFn)(Cli* cli);
 
-    int len = strlen(threads);
-    for (int i = 0; i < len; i++) {
-        if (threads[i] < '0' || threads[i] > '9') {
-            return false;
-        }
-    }
-    cli->threads = atoi(threads);
+typedef struct {
+    const char* name;
+    const char* description;
 
-    return true;
-}
+    ParseFn parse;
+} RequiredArg;
 
-void default_val_range(Cli* cli) {
-    cli->min_num = 1;
-    cli->max_num = 1000;
-}
+typedef struct {
+    const char* flag;
+    const char* description;
 
-void default_runs(Cli* cli) {
-    cli->runs = 5;
-}
+    ParseFn parse;
+    SetDefaultFn set_default;
+} OptionalArg;
 
-void default_threads(Cli* cli) {
-    // My cpu has 6 p cores so run on 12 threads
-    cli->threads = 12;
-}
-
-static const CliOption commands[] = {
+static const RequiredArg required_args[] = {
     {
-        { "--output", "-o" },
-        2,
-
-        parse_output_filename,
-        NULL,
-        "    -o|--output <output_filename.csv>    Name of file to write timings to\n",
-    },
-    {
-        { "--range", "-R" },
-        2,
-
+        "range",
+        "Inclusive range of numbers to calculate in the form x..y (y must be greater or equal to x)",
         parse_range,
-        default_val_range,
-        "    -R|--range <from>..<to>    Range of fibonacci numbers to calculate\n"
-        "                            (from must be <= to to)\n",
     },
     {
-        { "--runs", "-r" },
-        2,
-
-        parse_runs,
-        default_runs,
-        "    -r|--runs <runs>    Number of runs to do for each number",
-    },
-    {
-        { "--threads", "-t" },
-        2,
-
-        parse_threads,
-        default_threads,
-        "    -t|--threads <threads>    Number of threads to use for measuring in parallel",
+        "impl",
+        "Array of implementations seperated by commas to use for each number. \n"
+        "            Possible values are: naive,matrix",
+        parse_impl,
     }
 };
-static const int num_commands = sizeof(commands) / sizeof(CliOption);
+static const size_t num_required_args =
+    sizeof(required_args) / sizeof(RequiredArg);
+static const OptionalArg optional_args[] = {};
+static const size_t num_optional_args =
+    sizeof(optional_args) / sizeof(OptionalArg);
 
-void usage() {
-    printf("Usage:    nfib [options]\nOptions:\n");
-    for (int i = 0; i < num_commands; i++) {
-        printf("%s\n", commands[i].usage);
+void print_usage() {
+    printf("Usage: nfib ");
+    for (size_t i = 0; i < num_required_args; i++) {
+        printf("<%s> ", required_args[i].name);
     }
+    printf("[Options]\n\n");
+
+    printf("Required arguments:\n");
+    for (size_t i = 0; i < num_required_args; i++) {
+        printf(
+            "    <%s>: %s\n", required_args[i].name,
+            required_args[i].description
+        );
+    }
+    printf("Optional arguments:\n");
+    for (size_t i = 0; i < num_optional_args; i++) {
+        printf(
+            "    %s: %s\n", optional_args[i].flag, optional_args[i].description
+        );
+    }
+}
+
+bool parse_required(Cli* cli, int* argc, char*** argv) {
+    if (*argc < num_required_args) {
+        return false;
+    }
+
+    for (size_t i = 0; i < num_required_args; i++) {
+        if (!required_args[i].parse(cli, argc, argv)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void init_optional(Cli* cli) {
+    for (size_t i = 0; i < num_optional_args; i++) {
+        optional_args[i].set_default(cli);
+    }
+}
+
+bool parse_optional(Cli* cli, int* argc, char*** argv) {
+    while (*argc) {
+        bool good = false;
+        for (size_t i = 0; i < num_optional_args; i++) {
+            if (strcmp(optional_args[i].flag, (*argv)[0]) != 0) {
+                continue;
+            }
+
+            if (!optional_args[i].parse(cli, argc, argv)) {
+                return false;
+            }
+            good = true;
+        }
+
+        if (!good) {
+            printf("Unknown option: %s\n", (*argv)[0]);
+            return false;
+        }
+    }
+    return true;
 }
 
 bool cli_parse(Cli* cli, int argc, char** argv) {
-    bool* option_given = malloc(num_commands * sizeof(bool));
+    init_optional(cli);
 
-    for (int i = 0; i < num_commands; i++) {
-        if (commands[i].default_val_fn) {
-            commands[i].default_val_fn(cli);
-        }
+    // Skip first argument (name of binary)
+    argv++;
+    argc -= 1;
+
+    if (!parse_required(cli, &argc, &argv)) {
+        print_usage();
+        return false;
     }
 
-    int current_arg = 1;
-    while (current_arg < argc) {
-        bool handled = false;
-
-        for (int i = 0; i < num_commands && !handled; i++) {
-            const CliOption* c = &commands[i];
-            for (int f = 0; f < c->flag_count; f++) {
-                if (strcmp(c->flags[f], argv[current_arg]) == 0) {
-                    current_arg++;
-
-                    if (!c->parse_fn(cli, &current_arg, argv)) {
-                        printf("%s", commands[i].usage);
-                        return false;
-                    }
-
-                    handled = true;
-                    option_given[i] = true;
-                    break;
-                }
-            }
-        }
-
-        if (!handled) {
-            printf("Unknown argument: %s\n", argv[current_arg]);
-            usage();
-            return false;
-        }
+    if (!parse_optional(cli, &argc, &argv)) {
+        print_usage();
+        return false;
     }
-
-    for (int i = 0; i < num_commands; i++) {
-        if (!commands[i].default_val_fn && !option_given[i]) {
-            printf("Expected argument\n%s", commands[i].usage);
-            return false;
-        }
-    }
-    free(option_given);
 
     return true;
 }
 
 void cli_free(Cli* cli) {
-    free(cli->output_filename);
+    if (cli->csv_file_output != NULL) {
+        free(cli->csv_file_output);
+        cli->csv_file_output = NULL;
+    }
+}
+
+bool cli_impl(const Cli* cli, CliImpl m) {
+    return (cli->impl & m) != 0;
+}
+bool cli_output(const Cli* cli, CliOutput o) {
+    return (cli->output & o) != 0;
 }

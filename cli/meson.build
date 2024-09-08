@@ -10,6 +10,7 @@ sources_main = sources + ['src/main.c']
 
 test_sources = [
   'test/channel.cpp',
+  'test/cli.cpp',
   'test/ringbuff.cpp',
 ]
 

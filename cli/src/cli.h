@@ -15,11 +15,6 @@ static const char* const cli_impls[] = {
 };
 static const size_t num_cli_impls = sizeof(cli_impls) / sizeof(char*);
 
-typedef enum {
-    Console = 0b01,
-    CsvFile = 0b10,
-} CliOutput;
-
 typedef struct {
     // Inclusive range of numbers
     uint64_t min_num;
@@ -28,9 +23,7 @@ typedef struct {
     // Bitfield of implementations
     uint64_t impl;
 
-    // Bitfield of outputs
-    uint64_t output;
-    // Is null when CsvFile is not enabled
+    // Can be null if no output is specified
     char* csv_file_output;
 
     // Number of runs per number per implementaion
@@ -44,4 +37,3 @@ bool cli_parse(Cli* cli, int argc, char** argv);
 void cli_free(Cli* cli);
 
 bool cli_impl(const Cli* cli, CliImpl m);
-bool cli_output(const Cli* cli, CliOutput o);

@@ -30,24 +30,43 @@ std::vector<char*> convert_to_argv(std::vector<std::string>& v) {
 }
 
 TEST(Cli, only_required) {
-    auto argv_str = "nfib 100..200 matrix";
+    auto argv_str = "nfib 69..420 matrix";
     auto argv = split_space(argv_str);
     auto cargv = convert_to_argv(argv);
 
     Cli c;
     EXPECT_EQ(cli_parse(&c, cargv.size(), &cargv[0]), true);
 
-    EXPECT_EQ(c.min_num, 100);
-    EXPECT_EQ(c.max_num, 200);
+    EXPECT_EQ(c.min_num, 69);
+    EXPECT_EQ(c.max_num, 420);
 
     EXPECT_FALSE(cli_impl(&c, CliImpl::Naive));
     EXPECT_TRUE(cli_impl(&c, CliImpl::Matrix));
 
     EXPECT_EQ(c.runs, 3);
 
-    EXPECT_TRUE(cli_output(&c, CliOutput::Console));
-    EXPECT_FALSE(cli_output(&c, CliOutput::CsvFile));
     EXPECT_EQ(c.csv_file_output, nullptr);
 
     EXPECT_EQ(c.threads, (int) sysconf(_SC_NPROCESSORS_ONLN) - 1);
+}
+
+TEST(Cli, all) {
+    auto argv_str = "nfib 69..420 naive -r 10 -e output.csv -t 16";
+    auto argv = split_space(argv_str);
+    auto cargv = convert_to_argv(argv);
+
+    Cli c;
+    EXPECT_EQ(cli_parse(&c, cargv.size(), &cargv[0]), true);
+
+    EXPECT_EQ(c.min_num, 69);
+    EXPECT_EQ(c.max_num, 420);
+
+    EXPECT_TRUE(cli_impl(&c, CliImpl::Naive));
+    EXPECT_FALSE(cli_impl(&c, CliImpl::Matrix));
+
+    EXPECT_EQ(c.runs, 10);
+
+    EXPECT_TRUE(std::string("output.csv") == c.csv_file_output);
+
+    EXPECT_EQ(c.threads, 16);
 }

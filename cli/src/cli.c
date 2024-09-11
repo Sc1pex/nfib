@@ -1,9 +1,11 @@
 #include "cli.h"
 #include <ctype.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 bool parse_range(Cli* cli, int* argc, char*** argv) {
     char* range = (*argv)[0];
@@ -39,8 +41,9 @@ bool parse_range(Cli* cli, int* argc, char*** argv) {
 }
 
 bool parse_impl(Cli* cli, int* argc, char*** argv) {
-    (*argc)--;
     char* range = (*argv)[0];
+    (*argc)--;
+    (*argv)++;
 
     char* p = strtok(range, ",");
     while (p != NULL) {
@@ -63,8 +66,52 @@ bool parse_impl(Cli* cli, int* argc, char*** argv) {
     return true;
 }
 
+bool parse_runs(Cli* cli, int* argc, char*** argv) {
+    char* runs = (*argv)[0];
+    (*argc)--;
+    (*argv)++;
+
+    for (size_t i = 0; runs[i]; i++) {
+        if (!isdigit(runs[i])) {
+            return false;
+        }
+    }
+
+    cli->runs = strtol(runs, NULL, 10);
+    if (cli->runs < 1) {
+        return false;
+    }
+    return true;
+}
+
+bool parse_export(Cli* cli, int* argc, char*** argv) {
+    cli->csv_file_output = (*argv)[0];
+    (*argc)--;
+    (*argv)++;
+
+    return true;
+}
+
+bool parse_threads(Cli* cli, int* argc, char*** argv) {
+    char* threads = (*argv)[0];
+    (*argc)--;
+    (*argv)++;
+
+    for (size_t i = 0; threads[i]; i++) {
+        if (!isdigit(threads[i])) {
+            return false;
+        }
+    }
+
+    cli->threads = strtol(threads, NULL, 10);
+    if (cli->threads < 1) {
+        return false;
+    }
+
+    return true;
+}
+
 typedef bool (*ParseFn)(Cli* cli, int* argc, char*** argv);
-typedef bool (*SetDefaultFn)(Cli* cli);
 
 typedef struct {
     const char* name;
@@ -78,7 +125,6 @@ typedef struct {
     const char* description;
 
     ParseFn parse;
-    SetDefaultFn set_default;
 } OptionalArg;
 
 static const RequiredArg required_args[] = {
@@ -96,7 +142,26 @@ static const RequiredArg required_args[] = {
 };
 static const size_t num_required_args =
     sizeof(required_args) / sizeof(RequiredArg);
-static const OptionalArg optional_args[] = {};
+static const OptionalArg optional_args[] = {
+    {
+        "-r",
+        "-r <runs>: Number of runs per number per implementation. Default is 3",
+
+        parse_runs,
+    },
+    {
+        "-e",
+        "-e <file.csv>: Export the results to a csv file",
+
+        parse_export,
+    },
+    {
+        "-t",
+        "-t <threads>: Number of threads to use for calculation. Default is all avabile",
+
+        parse_threads,
+    },
+};
 static const size_t num_optional_args =
     sizeof(optional_args) / sizeof(OptionalArg);
 
@@ -116,9 +181,7 @@ void print_usage() {
     }
     printf("Optional arguments:\n");
     for (size_t i = 0; i < num_optional_args; i++) {
-        printf(
-            "    %s: %s\n", optional_args[i].flag, optional_args[i].description
-        );
+        printf("    %s\n", optional_args[i].description);
     }
 }
 
@@ -137,9 +200,9 @@ bool parse_required(Cli* cli, int* argc, char*** argv) {
 }
 
 void init_optional(Cli* cli) {
-    for (size_t i = 0; i < num_optional_args; i++) {
-        optional_args[i].set_default(cli);
-    }
+    cli->runs = 3;
+    cli->csv_file_output = NULL;
+    cli->threads = (int) sysconf(_SC_NPROCESSORS_ONLN) - 1;
 }
 
 bool parse_optional(Cli* cli, int* argc, char*** argv) {
@@ -150,10 +213,13 @@ bool parse_optional(Cli* cli, int* argc, char*** argv) {
                 continue;
             }
 
+            (*argv)++;
+            (*argc) -= 1;
             if (!optional_args[i].parse(cli, argc, argv)) {
                 return false;
             }
             good = true;
+            break;
         }
 
         if (!good) {
@@ -193,7 +259,4 @@ void cli_free(Cli* cli) {
 
 bool cli_impl(const Cli* cli, CliImpl m) {
     return (cli->impl & m) != 0;
-}
-bool cli_output(const Cli* cli, CliOutput o) {
-    return (cli->output & o) != 0;
 }

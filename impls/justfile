@@ -1,0 +1,7 @@
+setup:
+    cd c; meson setup build
+
+build-c:
+    cd c/build; meson compile
+    mkdir -p bin
+    cp c/build/nfib_c bin

@@ -10,11 +10,15 @@
 
     "ghcr.io/devcontainers/features/go:1": {
       "version": "1.23"
-    }
+    },
+    "ghcr.io/shyim/devcontainers-features/bun:0": {},
+    "ghcr.io/devcontainers/features/node:1": {}
   },
   "mounts": [
     "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind",
     "source=nvim_lazy_cache,target=/home/vscode/.local/share/nvim/lazy,type=volume"
   ],
-  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.local"
+  "postCreateCommand": "/workspaces/nfib/.devcontainer/postCreate.sh",
+  "forwardPorts": [8080, 5173],
+  "initializeCommand": ".devcontainer/forwardports &"
 }

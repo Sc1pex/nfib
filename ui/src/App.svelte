@@ -32,5 +32,5 @@
         min="0"
     />
 
-    <button type="submit"> Calculate Result </button>
+    <button type="submit"> Calculate </button>
 </form>

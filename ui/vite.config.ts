@@ -6,5 +6,8 @@ export default defineConfig({
   plugins: [svelte()],
   server: {
     host: "0.0.0.0"
+  },
+  build: {
+    outDir: "../server/ui-dist"
   }
 })

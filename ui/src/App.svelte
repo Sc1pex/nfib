@@ -1,36 +1,20 @@
 <script lang="ts">
-    const options = ["CNaive", "CMatrix"];
-    let selected: string;
-    let num: number;
+    import Input, { type FibEvent } from "./components/Input.svelte";
+    import Chart, { type DataPoint } from "./components/Chart.svelte";
 
-    let result: { num: string; ms: number } | undefined = undefined;
+    let chart_data: DataPoint[] = [];
 
-    function handleSubmit() {
-        fetch(`/api/calculate/${selected}/${num}`).then(async (resp) => {
-            const res = await resp.json();
-            result = res;
+    function handleResult(e: CustomEvent<FibEvent>) {
+        chart_data.push({
+            x: e.detail.n,
+            y: e.detail.time,
         });
+        chart_data = chart_data;
     }
 </script>
 
-<form
-    class="flex flex-col items-center pt-20 gap-5"
-    on:submit|preventDefault={handleSubmit}
->
-    <select class="bg-zinc-600 p-2 rounded" bind:value={selected}>
-        {#each options as option}
-            <option value={option}>
-                {option}
-            </option>
-        {/each}
-    </select>
+<div class="max-w-4xl mx-auto p-6">
+    <Input on:fib={handleResult} />
 
-    <input
-        class="bg-zinc-600 w-16 p-2 rounded"
-        type="number"
-        bind:value={num}
-        min="0"
-    />
-
-    <button type="submit"> Calculate </button>
-</form>
+    <Chart data={chart_data} />
+</div>

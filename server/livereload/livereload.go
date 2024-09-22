@@ -17,5 +17,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_ = conn
+	defer conn.Close()
+
+	for {
+	}
 }

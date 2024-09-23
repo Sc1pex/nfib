@@ -1,42 +1,30 @@
 package runner
 
 import (
-	"errors"
 	"log"
+	"nfib/data"
 	"os/exec"
 	"strconv"
 	"strings"
 )
-
-type impl struct {
-	cmd  string
-	args []string
-}
-
-var impls = map[string]impl{
-	"CNaive":  {cmd: "../impls/bin/nfib_c", args: []string{"naive"}},
-	"CMatrix": {cmd: "../impls/bin/nfib_c", args: []string{"matrix"}},
-}
-
-var ErrInvalidImpl = errors.New("invalid impl")
 
 type RunResult struct {
 	Num string
 	Dur float64
 }
 
-func Run(n uint64, impl string) (RunResult, error) {
-	i, exists := impls[impl]
+func Run(n uint64, impl string) RunResult {
+	i, exists := data.Impls[impl]
 	if !exists {
-		return RunResult{}, ErrInvalidImpl
+		log.Fatal("Called run with invalid impl: ", impl)
 	}
-	i.args = append(i.args, strconv.FormatUint(n, 10))
+	i.Args = append(i.Args, strconv.FormatUint(n, 10))
 
-	cmd := exec.Command(i.cmd, i.args...)
+	cmd := exec.Command(i.Cmd, i.Args...)
 	out, err := cmd.CombinedOutput()
 
 	if err != nil {
-		return RunResult{}, err
+		return RunResult{}
 	}
 
 	split := strings.Split(string(out), " ")
@@ -51,5 +39,5 @@ func Run(n uint64, impl string) (RunResult, error) {
 		log.Fatal("Invalid output from", impl, ". Duration is not a float64: ", split[1])
 	}
 
-	return r, nil
+	return r
 }

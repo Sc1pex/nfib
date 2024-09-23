@@ -3,6 +3,7 @@ package livereload
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -20,5 +21,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	for {
+		time.Sleep(time.Minute)
 	}
 }

@@ -8,8 +8,8 @@
 
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
+    import { fib_impls } from "../data";
 
-    const options = ["CNaive", "CMatrix"];
     let selected: string;
     let start: number = 1;
     let end: number = 100;
@@ -90,7 +90,7 @@
                 class="mt-1 block w-full p-2 border border-zinc-600 bg-zinc-700 rounded-md shadow-sm focus:ring-teal-400 focus:border-teal-400 text-zinc-100 sm:text-sm"
                 bind:value={selected}
             >
-                {#each options as option}
+                {#each fib_impls as option}
                     <option value={option}>
                         {option}
                     </option>

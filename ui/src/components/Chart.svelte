@@ -1,28 +1,35 @@
-<script context="module" lang="ts">
-    export type DataPoint = {
-        x: number;
-        y: number;
-    };
-</script>
-
 <script lang="ts">
     import { Chart } from "chart.js/auto";
     import { onMount } from "svelte";
-
-    export let data: DataPoint[];
+    import { chart_data } from "../charDataStore";
+    import { fib_impls, type ApiResponse } from "../data";
 
     let canvas: HTMLCanvasElement;
     let chart: Chart;
 
     $: if (chart != undefined) {
-        chart.data.datasets[0].data = data;
+        const data = $chart_data;
         for (let i = 0; i < data.length; i++) {
+            // @ts-ignore
             chart.options.scales.x.max = Math.max(
+                // @ts-ignore
                 chart.options.scales.x.max as number,
                 data[i].x,
             );
         }
+        chart.data.datasets[0].data = $chart_data;
         chart.update();
+    }
+
+    function loadCalculated() {
+        fetch(`/api/getall/${fib_impls[0]}`).then(async (resp) => {
+            let json: ApiResponse[] = await resp.json();
+
+            for (let r of json) {
+                chart_data.addPoint({ x: r.idx, y: r.ms });
+            }
+            chart.update();
+        });
     }
 
     onMount(() => {
@@ -64,6 +71,8 @@
                 },
             },
         });
+
+        loadCalculated();
     });
 </script>
 

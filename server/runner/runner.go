@@ -8,12 +8,7 @@ import (
 	"strings"
 )
 
-type RunResult struct {
-	Num string
-	Dur float64
-}
-
-func Run(n uint64, impl string) RunResult {
+func Run(n uint64, impl string) data.RunResult {
 	i, exists := data.Impls[impl]
 	if !exists {
 		log.Fatal("Called run with invalid impl: ", impl)
@@ -24,7 +19,7 @@ func Run(n uint64, impl string) RunResult {
 	out, err := cmd.CombinedOutput()
 
 	if err != nil {
-		return RunResult{}
+		return data.RunResult{}
 	}
 
 	split := strings.Split(string(out), " ")
@@ -32,12 +27,17 @@ func Run(n uint64, impl string) RunResult {
 		log.Fatal("Invalid output from ", impl, ": ", len(split), "\n", string(out))
 	}
 
-	var r RunResult
-	r.Num = strings.TrimSpace(split[0])
-	r.Dur, err = strconv.ParseFloat(strings.TrimSpace(split[1]), 64)
+	var r data.RunResult
+	r.Input = n
+	r.Output = strings.TrimSpace(split[0])
+	r.AvgTime, err = strconv.ParseFloat(strings.TrimSpace(split[1]), 64)
 	if err != nil {
 		log.Fatal("Invalid output from", impl, ". Duration is not a float64: ", split[1])
 	}
+
+	r.MinTime = r.AvgTime
+	r.MaxTime = r.AvgTime
+	r.NumRuns = 1
 
 	return r
 }

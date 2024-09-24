@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"nfib/data"
 
 	_ "github.com/tursodatabase/go-libsql"
 )
@@ -24,11 +25,14 @@ func Open() *Db {
 func (db *Db) Setup(current_impls []string) {
 	for _, i := range current_impls {
 		create := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
-            idx INTEGER PRIMARY KEY,
+            input INTEGER PRIMARY KEY,
+			output STRING NOT NULL,
+			
             avg_time REAL NOT NULL,
-            max_time REAL NOT NULL,
             min_time REAL NOT NULL,
-			result STRING NOT NULL
+            max_time REAL NOT NULL,
+
+			num_runs INTEGER NOT NULL
         )`, i)
 
 		_, err := db.db.Exec(create, i)
@@ -42,19 +46,19 @@ func (db *Db) Close() error {
 	return db.db.Close()
 }
 
-type Entry struct {
-	Idx      uint64
-	Avg_time float64
-	Min_time float64
-	Max_time float64
-	Result   string
-}
+func (db *Db) GetIdx(idx uint64, impl string) *data.RunResult {
+	query := fmt.Sprintf("SELECT * from %s WHERE input = ?", impl)
 
-func (db *Db) GetIdx(idx uint64, impl string) *Entry {
-	query := fmt.Sprintf("SELECT * from %s WHERE idx = ?", impl)
-
-	var entry Entry
-	if err := db.db.QueryRow(query, idx).Scan(&entry.Idx, &entry.Avg_time, &entry.Max_time, &entry.Min_time, &entry.Result); err != nil {
+	var entry data.RunResult
+	err := db.db.QueryRow(query, idx).Scan(
+		&entry.Input,
+		&entry.Output,
+		&entry.AvgTime,
+		&entry.MinTime,
+		&entry.MaxTime,
+		&entry.NumRuns,
+	)
+	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil
 		}
@@ -64,7 +68,7 @@ func (db *Db) GetIdx(idx uint64, impl string) *Entry {
 	return &entry
 }
 
-func (db *Db) GetAll(impl string) []Entry {
+func (db *Db) GetAll(impl string) []data.RunResult {
 	query := fmt.Sprintf("SELECT * from %s", impl)
 
 	rows, err := db.db.Query(query)
@@ -73,10 +77,18 @@ func (db *Db) GetAll(impl string) []Entry {
 	}
 	defer rows.Close()
 
-	var result []Entry
+	var result []data.RunResult
 	for rows.Next() {
-		var entry Entry
-		if err := rows.Scan(&entry.Idx, &entry.Avg_time, &entry.Max_time, &entry.Min_time, &entry.Result); err != nil {
+		var entry data.RunResult
+		err := rows.Scan(
+			&entry.Input,
+			&entry.Output,
+			&entry.AvgTime,
+			&entry.MinTime,
+			&entry.MaxTime,
+			&entry.NumRuns,
+		)
+		if err != nil {
 			log.Fatal("Failed to get entries in ", impl, ": ", err)
 		}
 		result = append(result, entry)
@@ -86,10 +98,21 @@ func (db *Db) GetAll(impl string) []Entry {
 
 }
 
-func (db *Db) Add(entry Entry, impl string) {
-	query := fmt.Sprintf("INSERT INTO %s (idx, avg_time, min_time, max_time, result) VALUES (?, ?, ?, ?, ?)", impl)
+func (db *Db) Add(entry data.RunResult, impl string) {
+	query := fmt.Sprintf(`INSERT INTO %s 
+		(input, output, avg_time, min_time, max_time, num_runs) 
+		VALUES (?, ?, ?, ?, ?, ?)
+	`, impl)
 
-	if _, err := db.db.Exec(query, entry.Idx, entry.Avg_time, entry.Min_time, entry.Max_time, entry.Result); err != nil {
+	_, err := db.db.Exec(query,
+		entry.Input,
+		entry.Output,
+		entry.AvgTime,
+		entry.MinTime,
+		entry.MaxTime,
+		entry.NumRuns,
+	)
+	if err != nil {
 		log.Fatal("Failed to add ", entry, "to table ", impl, ": ", err)
 	}
 }

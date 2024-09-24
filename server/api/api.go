@@ -48,21 +48,15 @@ func (api *api) calculate(w http.ResponseWriter, r *http.Request) error {
 	if db_entry := api.db.GetIdx(num, impl); db_entry != nil {
 		return writeJson(w,
 			http.StatusOK,
-			apiResponse{Result: db_entry.Result, AvgTime: db_entry.Avg_time, Index: num},
+			apiResponse{Result: db_entry.Output, AvgTime: db_entry.AvgTime, Index: num},
 		)
 	}
 
 	res := runner.Run(num, impl)
-	api.db.Add(db.Entry{
-		Idx:      num,
-		Avg_time: res.Dur,
-		Min_time: res.Dur,
-		Max_time: res.Dur,
-		Result:   res.Num,
-	}, impl)
+	api.db.Add(res, impl)
 	return writeJson(w,
 		http.StatusOK,
-		apiResponse{Result: res.Num, AvgTime: res.Dur, Index: num},
+		apiResponse{Result: res.Output, AvgTime: res.AvgTime, Index: num},
 	)
 }
 
@@ -77,9 +71,9 @@ func (api *api) getAll(w http.ResponseWriter, r *http.Request) error {
 
 	for i, e := range entries {
 		resp[i] = apiResponse{
-			Index:   e.Idx,
-			Result:  e.Result,
-			AvgTime: e.Avg_time,
+			Index:   e.Input,
+			Result:  e.Output,
+			AvgTime: e.AvgTime,
 		}
 	}
 

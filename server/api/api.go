@@ -52,7 +52,7 @@ func (api *api) calculate(w http.ResponseWriter, r *http.Request) error {
 		)
 	}
 
-	res := runner.Run(num, impl)
+	res := runner.Run(num, impl, 5)
 	api.db.Add(res, impl)
 	return writeJson(w,
 		http.StatusOK,

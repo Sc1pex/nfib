@@ -9,7 +9,6 @@
 
     $: if (chart != undefined) {
         const data = $chart_data;
-        console.log("Data is", data);
         data.forEach((data, impl) => {
             for (let i = 0; i < data.length; i++) {
                 // @ts-ignore

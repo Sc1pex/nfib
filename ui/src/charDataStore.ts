@@ -2,18 +2,26 @@ import { writable } from "svelte/store";
 import type { DataPoint } from "./data";
 
 function createChartData() {
-  const { subscribe, set, update } = writable<DataPoint[]>([]);
+  const { subscribe, update } = writable<Map<string, DataPoint[]>>(new Map());
 
   return {
     subscribe,
-    addPoint: (point: DataPoint) => {
+    addPoint: (impl: string, point: DataPoint) => {
       update((p) => {
-        p.push(point);
+        let d = p.get(impl);
+        if (d === undefined) {
+          p.set(impl, [point]);
+        } else {
+          d.push(point);
+        }
         return p;
       });
     },
-    clear: () => {
-      set([]);
+    clear: (impl: string) => {
+      update((p) => {
+        p.delete(impl);
+        return p;
+      });
     },
   };
 }

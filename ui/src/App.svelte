@@ -4,7 +4,7 @@
     import { chart_data } from "./charDataStore";
 
     function handleResult(e: CustomEvent<FibEvent>) {
-        chart_data.addPoint({
+        chart_data.addPoint(e.detail.impl, {
             x: e.detail.n,
             y: e.detail.time,
         });

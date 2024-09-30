@@ -9,38 +9,58 @@
 
     $: if (chart != undefined) {
         const data = $chart_data;
-        for (let i = 0; i < data.length; i++) {
-            // @ts-ignore
-            chart.options.scales.x.max = Math.max(
+        console.log("Data is", data);
+        data.forEach((data, impl) => {
+            for (let i = 0; i < data.length; i++) {
                 // @ts-ignore
-                chart.options.scales.x.max as number,
-                data[i].x,
-            );
-        }
-        chart.data.datasets[0].data = $chart_data;
+                chart.options.scales.x.max = Math.max(
+                    // @ts-ignore
+                    chart.options.scales.x.max as number,
+                    data[i].x,
+                );
+            }
+            let idx = fib_impls.findIndex((i) => i == impl);
+            chart.data.datasets[idx].data = data;
+        });
         chart.update();
     }
 
     function loadCalculated() {
-        fetch(`/api/getall/${fib_impls[0]}`).then(async (resp) => {
-            let json: ApiResponse[] = await resp.json();
+        for (let i of fib_impls) {
+            fetch(`/api/getall/${i}`).then(async (resp) => {
+                let json: ApiResponse[] = await resp.json();
 
-            for (let r of json) {
-                chart_data.addPoint({ x: r.idx, y: r.ms });
-            }
-            chart.update();
-        });
+                for (let r of json) {
+                    chart_data.addPoint(i, { x: r.idx, y: r.ms });
+                }
+                chart.update();
+            });
+        }
+    }
+
+    function deleteAll() {
+        for (let i of fib_impls) {
+            fetch(`/api/deleteall/${i}`);
+            chart_data.clear(i);
+        }
     }
 
     onMount(() => {
+        let createDatasets = () => {
+            let arr = [];
+            for (let i of fib_impls) {
+                arr.push({
+                    label: i,
+                    data: [],
+                });
+            }
+            return arr;
+        };
+
         chart = new Chart(canvas, {
             type: "scatter",
             data: {
-                datasets: [
-                    {
-                        data: [],
-                    },
-                ],
+                datasets: createDatasets(),
             },
             options: {
                 scales: {
@@ -54,11 +74,6 @@
                             display: true,
                             text: "Time (ms)",
                         },
-                    },
-                },
-                plugins: {
-                    legend: {
-                        display: false,
                     },
                 },
                 elements: {

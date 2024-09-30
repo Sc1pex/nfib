@@ -81,4 +81,13 @@
         Execution Time Graph
     </h2>
     <canvas bind:this={canvas} class="w-full h-64"></canvas>
+
+    <div class="flex justify-end">
+        <button
+            on:click={deleteAll}
+            class="bg-teal-500 text-white font-semibold py-2 px-4 rounded-md shadow hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-400 focus:ring-offset-zinc-800 mt-6"
+        >
+            Delete data
+        </button>
+    </div>
 </div>

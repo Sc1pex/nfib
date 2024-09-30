@@ -23,6 +23,7 @@ func ApiHandler() http.Handler {
 
 	api.mux.HandleFunc("GET /calculate/{impl}/{num}", makeHandler(api.calculate))
 	api.mux.HandleFunc("GET /getall/{impl}", makeHandler(api.getAll))
+	api.mux.HandleFunc("GET /deleteall/{impl}", makeHandler(api.deleteAll))
 
 	return api.mux
 }
@@ -78,4 +79,15 @@ func (api *api) getAll(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return writeJson(w, http.StatusOK, resp)
+}
+
+func (api *api) deleteAll(w http.ResponseWriter, r *http.Request) error {
+	impl := r.PathValue("impl")
+	if !data.IsValidImpl(impl) {
+		return invalidData(fmt.Sprintf("unknown impl %s", impl))
+	}
+
+	api.db.DeleteAll(impl)
+
+	return nil
 }

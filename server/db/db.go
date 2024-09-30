@@ -95,7 +95,15 @@ func (db *Db) GetAll(impl string) []data.RunResult {
 	}
 
 	return result
+}
 
+func (db *Db) DeleteAll(impl string) {
+	query := fmt.Sprintf("DELETE FROM %s", impl)
+
+	_, err := db.db.Exec(query)
+	if err != nil {
+		log.Fatal("Failed to delete from db ", impl, ": ", err)
+	}
 }
 
 func (db *Db) Add(entry data.RunResult, impl string) {

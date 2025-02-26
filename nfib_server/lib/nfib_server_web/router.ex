@@ -20,8 +20,12 @@ defmodule NfibServerWeb.Router do
     get "/", HomeController, :index
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", NfibServerWeb do
-  #   pipe_through :api
-  # end
+  scope "/runnerapi", NfibServerWeb do
+    pipe_through :api
+
+    post "/add", RunnerAPIController, :add
+    post "/remove", RunnerAPIController, :remove
+
+    get "/debugList", RunnerAPIController, :debug_list
+  end
 end

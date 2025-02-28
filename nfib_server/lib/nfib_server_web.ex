@@ -78,6 +78,18 @@ defmodule NfibServerWeb do
     end
   end
 
+  def json do
+    quote do
+      use Phoenix.Controller,
+        formats: [:json]
+
+      import Plug.Conn
+      import NfibServerWeb.JsonApiMacros
+
+      unquote(verified_routes())
+    end
+  end
+
   defp html_helpers do
     quote do
       # HTML escaping functionality

@@ -24,7 +24,7 @@ defmodule NfibServerWeb.Router do
     pipe_through :api
 
     post "/add", RunnerAPIController, :add
-    post "/remove", RunnerAPIController, :remove
+    post "/delete", RunnerAPIController, :delete
 
     get "/debugList", RunnerAPIController, :debug_list
   end

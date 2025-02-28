@@ -32,6 +32,41 @@ defmodule NfibServer.RunnerAPI do
     {:error, "Invalid request"}
   end
 
+  def remove_runner(%{
+        "runner" => %{"name" => r_name, "address" => r_addr} = runner
+      })
+      when is_binary(r_name) and is_binary(r_addr) do
+    import Ecto.Query
+
+    with {:ok, runner_id} <- runner_id(runner) do
+      remove_impls(runner_id)
+
+      case Repo.delete_all(from r in Runner, where: r.id == ^runner_id) do
+        {1, _} -> {:ok, ""}
+        _ -> {:error, :db_error}
+      end
+    else
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def remove_runner(_invalid) do
+    {:error, "Invalid request"}
+  end
+
+  defp runner_id(runner) do
+    import Ecto.Query
+
+    case Repo.one(
+           from r in Runner,
+             where: r.name == ^runner["name"] and r.address == ^runner["address"],
+             select: r.id
+         ) do
+      nil -> {:error, "Runner not found"}
+      id -> {:ok, id}
+    end
+  end
+
   defp add_runner(runner) do
     insert_result =
       %Runner{}
@@ -75,5 +110,11 @@ defmodule NfibServer.RunnerAPI do
       {false, _} -> {:error, "Invalid request"}
       {_, false} -> {:error, "Impls must be distinct"}
     end
+  end
+
+  defp remove_impls(runner_id) do
+    import Ecto.Query
+
+    Repo.delete_all(from i in Impl, where: i.runner_id == ^runner_id)
   end
 end

@@ -25,7 +25,5 @@ defmodule NfibServerWeb.Router do
 
     post "/add", RunnerAPIController, :add
     post "/delete", RunnerAPIController, :delete
-
-    get "/debugList", RunnerAPIController, :debug_list
   end
 end

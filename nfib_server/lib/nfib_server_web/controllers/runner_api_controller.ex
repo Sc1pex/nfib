@@ -8,6 +8,9 @@ defmodule NfibServerWeb.RunnerAPIController do
       {:ok, _} ->
         json(conn, %{status: "ok"})
 
+      {:error, :db_error} ->
+        conn |> put_status(:internal_server_error) |> json(%{error: "Internal server error"})
+
       {:error, reason} ->
         conn |> put_status(:bad_request) |> json(%{error: reason})
     end

@@ -5,15 +5,12 @@ defmodule NfibServer.RunnerAPI do
   alias NfibServer.RunnerAPI.{Runner, Impl}
 
   def add_runner_with_impls(%{
-        "runner" => %{"name" => _, "address" => _} = runner,
+        "runner" => %{"name" => r_name, "address" => r_addr} = runner,
         "impls" => impls
       })
-      when is_list(impls) do
+      when is_list(impls) and is_binary(r_name) and is_binary(r_addr) do
     with {:ok, _} <- validate_impls(impls),
          {:ok, runner_id} <- add_runner(runner) do
-      IO.puts("Runner ID:")
-      IO.inspect(runner_id)
-
       add_impl_result =
         Enum.reduce_while(impls, nil, fn impl_name, acc ->
           case add_impl(impl_name, runner_id) do
@@ -36,22 +33,24 @@ defmodule NfibServer.RunnerAPI do
   end
 
   defp add_runner(runner) do
-    runner =
+    insert_result =
       %Runner{}
       |> Runner.changeset(runner)
       |> Repo.insert()
 
-    case runner do
-      {:ok, runner} ->
-        {:ok, runner.id}
+    case insert_result do
+      {:ok, changeset} ->
+        {:ok, changeset.id}
 
-      {:error, %Ecto.Changeset{errors: errors}} ->
-        if {:name, ["has already been taken"]} in errors do
-          {:ok, Repo.get_by(Runner, name: runner.name).id}
-        else
-          Logger.info("Runner errors: #{inspect(errors)}")
-          {:error, "Invalid request"}
-        end
+      {:error, %Ecto.Changeset{errors: [name: {"has already been taken", _}]}} ->
+        {:error, "Runner " <> runner["name"] <> " already exists"}
+
+      {:error, %Ecto.Changeset{errors: [address: {"has already been taken", _}]}} ->
+        {:error, "Runner with address " <> runner["address"] <> " already exists"}
+
+      {:error, changeset} ->
+        Logger.error("Error inserting runner to db: #{inspect(changeset.errors)}")
+        {:error, :db_error}
     end
   end
 
@@ -63,7 +62,7 @@ defmodule NfibServer.RunnerAPI do
 
     case impl do
       {:ok, _} -> {:ok, ""}
-      {:error, err} -> {:error, "Invalid impl" <> impl_name}
+      {:error, _} -> {:error, :db_error}
     end
   end
 

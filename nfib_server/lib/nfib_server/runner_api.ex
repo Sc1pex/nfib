@@ -4,6 +4,28 @@ defmodule NfibServer.RunnerAPI do
   alias NfibServer.Repo
   alias NfibServer.RunnerAPI.{Runner, Impl}
 
+  def runners() do
+    import Ecto.Query
+
+    data =
+      Repo.all(
+        from r in Runner,
+          join: i in Impl,
+          on: i.runner_id == r.id,
+          select: {r.name, r.address, i.name}
+      )
+
+    Enum.reduce(data, %{}, fn {name, addr, impl}, acc ->
+      case acc[name] do
+        nil ->
+          Map.put(acc, name, %{address: addr, impls: [impl]})
+
+        %{address: addr, impls: impls} ->
+          Map.put(acc, name, %{address: addr, impls: [impl | impls]})
+      end
+    end)
+  end
+
   def add_runner_with_impls(%{
         "runner" => %{"name" => r_name, "address" => r_addr} = runner,
         "impls" => impls

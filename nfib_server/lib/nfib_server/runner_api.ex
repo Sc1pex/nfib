@@ -31,19 +31,10 @@ defmodule NfibServer.RunnerAPI do
         "impls" => impls
       })
       when is_list(impls) and is_binary(r_name) and is_binary(r_addr) do
-    with {:ok, _} <- validate_impls(impls),
-         {:ok, runner_id} <- add_runner(runner) do
-      add_impl_result =
-        Enum.reduce_while(impls, nil, fn impl_name, acc ->
-          case add_impl(impl_name, runner_id) do
-            {:ok, _} -> {:cont, acc}
-            {:error, reason} -> {:halt, {:error, reason}}
-          end
-        end)
-
-      case add_impl_result do
-        nil -> {:ok, ""}
-        {:error, reason} -> {:error, reason}
+    with {:ok, _} <- validate_impls(impls) do
+      case has_runner(runner) do
+        nil -> new_runner(runner, impls)
+        id -> update_runner(id, impls)
       end
     else
       {:error, reason} -> {:error, reason}
@@ -86,6 +77,35 @@ defmodule NfibServer.RunnerAPI do
          ) do
       nil -> {:error, "Runner not found"}
       id -> {:ok, id}
+    end
+  end
+
+  defp has_runner(runner) do
+    import Ecto.Query
+
+    query =
+      from r in Runner,
+        where: r.name == ^runner["name"] and r.address == ^runner["address"],
+        select: r.id
+
+    Repo.one(query)
+  end
+
+  defp new_runner(runner, impls) do
+    with {:ok, runner_id} <- add_runner(runner),
+         nil <- add_impls(runner_id, impls) do
+      {:ok, ""}
+    else
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp update_runner(runner_id, impls) do
+    remove_impls(runner_id)
+
+    case add_impls(runner_id, impls) do
+      nil -> {:ok, ""}
+      {:error, reason} -> {:error, reason}
     end
   end
 
@@ -132,6 +152,15 @@ defmodule NfibServer.RunnerAPI do
       {false, _} -> {:error, "Invalid request"}
       {_, false} -> {:error, "Impls must be distinct"}
     end
+  end
+
+  defp add_impls(runner_id, impls) do
+    Enum.reduce_while(impls, nil, fn impl_name, acc ->
+      case add_impl(impl_name, runner_id) do
+        {:ok, _} -> {:cont, acc}
+        {:error, reason} -> {:halt, {:error, reason}}
+      end
+    end)
   end
 
   defp remove_impls(runner_id) do

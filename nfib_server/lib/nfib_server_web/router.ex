@@ -17,7 +17,7 @@ defmodule NfibServerWeb.Router do
   scope "/", NfibServerWeb do
     pipe_through :browser
 
-    get "/runners", HomeController, :runners
+    live "/runners", RunnersLive
   end
 
   scope "/runnerapi", NfibServerWeb do

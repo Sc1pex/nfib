@@ -1,6 +1,7 @@
 defmodule NfibServer.RunnerAPI do
   require Logger
 
+  alias Ecto.Repo
   alias NfibServer.Repo
   alias NfibServer.RunnerAPI.{Runner, Impl}
 
@@ -26,16 +27,31 @@ defmodule NfibServer.RunnerAPI do
     end)
   end
 
+  def runner_info(runner_name) do
+    import Ecto.Query
+
+    case(
+      Repo.one(from r in Runner, where: r.name == ^runner_name, select: {r.name, r.address})
+    ) do
+      nil -> {:error, "Runner not found"}
+      {name, address} -> {:ok, %{name: name, address: address}}
+    end
+  end
+
   def add_runner_with_impls(%{
         "runner" => %{"name" => r_name, "address" => r_addr} = runner,
         "impls" => impls
       })
       when is_list(impls) and is_binary(r_name) and is_binary(r_addr) do
     with {:ok, _} <- validate_impls(impls) do
-      case has_runner(runner) do
-        nil -> new_runner(runner, impls)
-        id -> update_runner(id, impls)
-      end
+      result =
+        case has_runner(runner) do
+          nil -> new_runner(runner, impls)
+          id -> update_runner(id, impls)
+        end
+
+      Phoenix.PubSub.broadcast(NfibServer.PubSub, "runners", :runners_update)
+      result
     else
       {:error, reason} -> {:error, reason}
     end

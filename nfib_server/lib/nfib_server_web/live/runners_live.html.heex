@@ -6,12 +6,13 @@
   <div class="collapse collapse-arrow border border-base-300 bg-base-200 my-4">
     <input type="checkbox" />
     <div class="collapse-title text-xl font-medium">
-      {runner_name}
       <%= if @runners_status[data[:address]]==:online do %>
         <.online_icon class="inline w-8 text-success" />
       <% else %>
         <.online_icon class="inline w-8 text-error" />
       <% end %>
+
+      <span class="ml-2">{runner_name}</span>
     </div>
     <div class="collapse-content text-sm relative">
       <p class="text-base-content/40">Address: {data[:address]}</p>

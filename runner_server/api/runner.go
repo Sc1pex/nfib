@@ -22,5 +22,7 @@ func RunnerServer(config *config.Config) http.Handler {
 }
 
 func health(w http.ResponseWriter, r *http.Request) error {
-	return writeJson(w, 200, "alive")
+	w.WriteHeader(http.StatusOK)
+	_, err := w.Write([]byte("alive"))
+	return err
 }

@@ -1,7 +1,6 @@
 defmodule NfibServer.RunnerAPI do
   require Logger
 
-  alias Ecto.Repo
   alias NfibServer.Repo
   alias NfibServer.RunnerAPI.{Runner, Impl}
 

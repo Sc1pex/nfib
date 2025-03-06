@@ -4,17 +4,20 @@ defmodule NfibServerWeb.RunnersLive do
 
   def mount(_params, _session, socket) do
     Phoenix.PubSub.subscribe(NfibServer.PubSub, "runners")
-    {:ok, assign(socket, runners: NfibServer.RunnerAPI.runners())}
+    Phoenix.PubSub.subscribe(NfibServer.PubSub, "runners_status")
+
+    {:ok,
+     socket
+     |> assign(runners: NfibServer.RunnerAPI.runners())
+     |> assign(runners_status: NfibServer.RunnerStatus.get_status())}
   end
 
-  def handle_info(msg, socket) do
-    case msg do
-      :runners_update ->
-        {:noreply, assign(socket, runners: NfibServer.RunnerAPI.runners())}
+  def handle_info(:runners_update, socket) do
+    {:noreply, assign(socket, runners: NfibServer.RunnerAPI.runners())}
+  end
 
-      _ ->
-        {:noreply, socket}
-    end
+  def handle_info({:runners_status_change, new_status}, socket) do
+    {:noreply, assign(socket, runners_status: new_status)}
   end
 
   def handle_event("delete", %{"runner_name" => runner_name}, socket) do

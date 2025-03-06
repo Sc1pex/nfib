@@ -11,13 +11,10 @@ defmodule NfibServer.Application do
       NfibServerWeb.Telemetry,
       NfibServer.Repo,
       {Ecto.Migrator,
-        repos: Application.fetch_env!(:nfib_server, :ecto_repos),
-        skip: skip_migrations?()},
+       repos: Application.fetch_env!(:nfib_server, :ecto_repos), skip: skip_migrations?()},
       {DNSCluster, query: Application.get_env(:nfib_server, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: NfibServer.PubSub},
-      # Start a worker by calling: NfibServer.Worker.start_link(arg)
-      # {NfibServer.Worker, arg},
-      # Start to serve requests, typically the last entry
+      NfibServer.RunnerStatus,
       NfibServerWeb.Endpoint
     ]
 

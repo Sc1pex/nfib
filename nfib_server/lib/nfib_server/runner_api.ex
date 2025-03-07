@@ -49,7 +49,11 @@ defmodule NfibServer.RunnerAPI do
           id -> update_runner(id, impls)
         end
 
+      # Notify frontend a new runner has been added
       Phoenix.PubSub.broadcast(NfibServer.PubSub, "runners", :runners_update)
+      # Make sure runner appers online immediately
+      NfibServer.RunnerStatus.update_status()
+
       result
     else
       {:error, reason} -> {:error, reason}

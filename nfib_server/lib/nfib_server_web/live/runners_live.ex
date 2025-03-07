@@ -8,16 +8,16 @@ defmodule NfibServerWeb.RunnersLive do
 
     {:ok,
      socket
-     |> assign(runners: NfibServer.RunnerAPI.runners())
-     |> assign(runners_status: NfibServer.RunnerStatus.get_status())}
+     |> assign(:runners, NfibServer.RunnerAPI.runners())
+     |> assign(:runners_status, NfibServer.RunnerStatus.get_status())}
   end
 
   def handle_info(:runners_update, socket) do
-    {:noreply, assign(socket, runners: NfibServer.RunnerAPI.runners())}
+    {:noreply, assign(socket, :runners, NfibServer.RunnerAPI.runners())}
   end
 
   def handle_info({:runners_status_change, new_status}, socket) do
-    {:noreply, assign(socket, runners_status: new_status)}
+    {:noreply, assign(socket, :runners_status, new_status)}
   end
 
   def handle_event("delete", %{"runner_name" => runner_name}, socket) do
@@ -29,11 +29,17 @@ defmodule NfibServerWeb.RunnersLive do
                "address" => runner[:address]
              }
            }) do
-      {:noreply, assign(socket, runners: NfibServer.RunnerAPI.runners())}
+      {:noreply, assign(socket, :runners, NfibServer.RunnerAPI.runners())}
     else
       {:error, reason} ->
         IO.inspect(reason)
         {:noreply, socket}
     end
+  end
+
+  def handle_event("reload_status", _, socket) do
+    NfibServer.RunnerStatus.update_status()
+
+    {:noreply, socket}
   end
 end

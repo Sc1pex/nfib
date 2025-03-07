@@ -10,11 +10,11 @@ defmodule NfibServer.RunnerStatus do
   end
 
   def update_status do
-    GenServer.call(__MODULE__, :update)
+    GenServer.cast(__MODULE__, :update)
   end
 
   def get_status do
-    GenServer.call(__MODULE__, :get_status)
+    GenServer.call(__MODULE__, :get_status, :infinity)
   end
 
   @impl true
@@ -26,8 +26,19 @@ defmodule NfibServer.RunnerStatus do
   end
 
   @impl true
-  def handle_call(:update, _from, old_state) do
-    handle_info(:update, old_state)
+  def handle_cast(:update, old_state) do
+    state = runners_status()
+    diff = state_diff(old_state, state)
+
+    if MapSet.size(diff) > 0 do
+      Phoenix.PubSub.broadcast(
+        NfibServer.PubSub,
+        "runners_status",
+        {:runners_status_change, state}
+      )
+    end
+
+    {:noreply, state}
   end
 
   @impl true
@@ -36,24 +47,15 @@ defmodule NfibServer.RunnerStatus do
   end
 
   @impl true
-  def handle_info(:update, old_state) do
-    state = runners_status()
-    diff = state_diff(old_state, state)
-
-    if map_size(diff) > 0 do
-      Phoenix.PubSub.broadcast(
-        NfibServer.PubSub,
-        "runners_status",
-        {:runners_status_change, state}
-      )
-    end
-
+  def handle_info(:periodic_update, old_state) do
+    return = handle_cast(:update, old_state)
     schedule_update()
-    {:noreply, state}
+
+    return
   end
 
   defp schedule_update() do
-    Process.send_after(self(), :update, @update_interval)
+    Process.send_after(self(), :periodic_update, @update_interval)
   end
 
   defp runners_status() do
@@ -61,15 +63,14 @@ defmodule NfibServer.RunnerStatus do
     runners = Repo.all(from r in RunnerAPI.Runner, select: r.address)
 
     Map.new(runners, fn address ->
-      case HTTPoison.get("#{address}/health") do
+      case HTTPoison.get("#{address}/health", [], recv_timeout: 1000) do
         {:ok, %HTTPoison.Response{status_code: 200, body: "alive"}} -> {address, :online}
         _ -> {address, :offline}
       end
     end)
-    |> IO.inspect()
   end
 
   defp state_diff(old_state, new_state) do
-    MapSet.difference(MapSet.new(old_state), MapSet.new(new_state))
+    MapSet.difference(MapSet.new(new_state), MapSet.new(old_state))
   end
 end

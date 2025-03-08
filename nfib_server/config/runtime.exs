@@ -49,6 +49,7 @@ if config_env() == :prod do
   config :nfib_server, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
   config :nfib_server, NfibServerWeb.Endpoint,
+    url: [host: "scipex.doi8.duckdns.org"],
     http: [
       ip: :any,
       port: port

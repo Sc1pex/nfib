@@ -3,6 +3,7 @@ package server_api
 import (
 	"bytes"
 	"errors"
+	"log"
 	"net/http"
 	"runner_server/config"
 )
@@ -33,6 +34,7 @@ func RegisterRunner(config *config.Config) error {
 	}
 
 	if res.StatusCode != http.StatusOK {
+		log.Print(res)
 		return errors.New("Failed to register runner")
 	}
 

@@ -1,4 +1,8 @@
-@import "tailwindcss" source("../..");
+@source "../js/**/*.js";
+@source "../../lib/nfib_server_web.ex.ex";
+@source "../../lib/nfib_server_web/**/*.*ex";
+
+@import "tailwindcss";
 
 @plugin "daisyui";
 @plugin "../tailwind_plugin.js";

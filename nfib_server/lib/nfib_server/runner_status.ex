@@ -3,7 +3,7 @@ defmodule NfibServer.RunnerStatus do
   alias NfibServer.RunnerAPI
   use GenServer
 
-  @update_interval :timer.seconds(10)
+  @update_interval Application.compile_env(:nfib_server, :runner_status_update_interval)
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)

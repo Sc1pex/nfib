@@ -11,5 +11,7 @@ config :nfib_server, NfibServerWeb.Endpoint,
 # Do not print debug messages in production
 config :logger, level: :info
 
+config :nfib_server, runner_status_update_interval: :timer.seconds(30)
+
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.
